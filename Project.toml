@@ -1,0 +1,9 @@
+name = "SparseMM"
+uuid = "3ca99d5a-6b98-11ea-3bb7-df5801fb527a"
+authors = ["Gianmaria Del Monte <g.macmount@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+GraphBLASInterface = "5f047416-9681-11e9-0804-033d9936201f"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SuiteSparseGraphBLAS = "c2e53296-7b14-11e9-1210-bddfa8111e1d"
