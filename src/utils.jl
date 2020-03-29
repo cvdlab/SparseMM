@@ -19,18 +19,43 @@ const db2 = x -> x÷2
     return DIV_BY_TWO_OP
 end
 
+function __type_suffix(T::DataType)
+    if T == Bool
+        return "BOOL"
+    elseif T == Int8
+        return "INT8"
+    elseif T == UInt8
+        return "UINT8"
+    elseif T == Int16
+        return "INT16"
+    elseif T == UInt16
+        return "UINT16"
+    elseif T == Int32
+        return "INT32"
+    elseif T == UInt32
+        return "UINT32"
+    elseif T == Int64
+        return "INT64"
+    elseif T == UInt64
+        return "UINT64"
+    elseif  T == Float32
+        return "FP32"
+    end
+    return "FP64"
+end
+
 @inline function GrB_type(T)
-    return eval(Symbol("GrB_", uppercase(string(typeof(zero(T))))))
+    return eval(Symbol("GrB_", __type_suffix(T)))
 end
 
 @inline function GrB_op(fun_name, T)
-    return eval(Symbol("GrB_", fun_name, "_", uppercase(string(typeof(zero(T))))))
+    return eval(Symbol("GrB_", fun_name, "_", __type_suffix(T)))
 end
 
 @inline function GxB_op(fun_name, T)
-    return eval(Symbol("GxB_", fun_name, "_", uppercase(string(typeof(zero(T))))))
+    return eval(Symbol("GxB_", fun_name, "_", __type_suffix(T)))
 end
 
 @inline function GxB_monoid(fun_name, T)
-    return eval(Symbol("GxB_", fun_name, "_", uppercase(string(typeof(zero(T)))), "_MONOID"))
+    return eval(Symbol("GxB_", fun_name, "_", __type_suffix(T), "_MONOID"))
 end

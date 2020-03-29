@@ -32,9 +32,9 @@ Convert a SparseVector into a GraphBLAS vector.
 """
 function sv2gbv(V::SparseVector{TE,TI}) where {TE, TI}
     res = GrB_Vector{TE}()
-    GrB_Vector_new(res, SparseMM.GrB_type(TE), size(V, 1))
+    GrB_Vector_new(res, GrB_type(TE), size(V, 1))
     I, X = SparseArrays.findnz(V)
-    GrB_Vector_build(res, ZeroBasedIndex.(I.-1), X, size(X, 1), SparseMM.GrB_op("FIRST", TE))
+    GrB_Vector_build(res, ZeroBasedIndex.(I.-1), X, size(X, 1), GrB_op("FIRST", TE))
     return res
 end
 
@@ -159,19 +159,18 @@ end
 Same as `dmv` but much slower (Deprecated).
 """
 function dmv_old(A::GrB_Matrix{T}, B::GrB_Vector{T}) where T
-    @assert GrB_Matrix_ncols(A) == GrB_Vector_size(B)
-    res = gbm_new(GrB_Matrix_nrows(A), GrB_Matrix_ncols(A))
-    tmp = gbv_new(GrB_Vector_size(B))
+    res = gbm_new(T, GrB_Matrix_nrows(A), GrB_Matrix_ncols(A))
+    tmp = gbv_new(T, GrB_Vector_size(B))
 
     for j in 0:GrB_Matrix_ncols(A)-1
         # select col j from A -> tmp
         GrB_Col_extract(tmp, GrB_NULL, GrB_NULL, A, GrB_ALL, 0, ZeroBasedIndex(j), TRAN)
         # q .// v -> tmp
-        GrB_eWiseMult(tmp, GrB_NULL, GrB_NULL, GxB_op("TIMES_DIV", T), tmp, B, GrB_NULL)
+        GrB_eWiseMult(tmp, GrB_NULL, GrB_NULL, DIV(T), tmp, B, GrB_NULL)
         # copy tmp in res[j]
         GrB_Col_assign(res, GrB_NULL, GrB_NULL, tmp, GrB_ALL, 0, ZeroBasedIndex(j), GrB_NULL)
     end
-    res2 = gbm_new_int64(GrB_Matrix_nrows(A), GrB_Matrix_ncols(A))
+    res2 = gbm_new(T, GrB_Matrix_nrows(A), GrB_Matrix_ncols(A))
     GrB_transpose(res2,GrB_NULL,GrB_NULL,res,GrB_NULL)
     GrB_wait()  # flush pending transitions
     GrB_Vector_free(tmp)
