@@ -23,6 +23,22 @@ function sm2gbm(A::SparseMatrixCSC{TE, TI}, tran=false) where {TE, TI}
 end
 
 """
+    sv2gbv(V)
+
+Convert a SparseVector into a GraphBLAS vector.
+
+# Arguments
+- `V::SparseVector` : sparse vector
+"""
+function sv2gbv(V::SparseVector{TE,TI}) where {TE, TI}
+    res = GrB_Vector{TE}()
+    GrB_Vector_new(res, SparseMM.GrB_type(TE), size(V, 1))
+    I, X = SparseArrays.findnz(V)
+    GrB_Vector_build(res, ZeroBasedIndex.(I.-1), X, size(X, 1), SparseMM.GrB_op("FIRST", TE))
+    return res
+end
+
+"""
     gbm2sm(A)
 
 Convert a GraphBLAS matrix into a SparseMatrix.
@@ -35,6 +51,20 @@ function gbm2sm(A::GrB_Matrix)
     I = map(e -> e.x+1, I)
     J = map(e -> e.x+1, J)
     return SparseArrays.sparse(I, J, X, GrB_Matrix_nrows(A), GrB_Matrix_ncols(A))
+end
+
+"""
+    gbv2sm(V)
+
+Convert a GraphBLAS vector into a SparseVector.
+
+# Arguments
+- `A::GrB_Vector` : the GraphBLAS vector
+"""
+function gbv2sm(V::GrB_Vector)
+    I, X = GrB_Vector_extractTuples(V)
+    I = map(e -> e.x+1, I)
+    return SparseArrays.sparsevec(I, J, GrB_Vector_size(V))
 end
 
 """
